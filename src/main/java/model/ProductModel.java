@@ -44,7 +44,8 @@ public class ProductModel {
 		}
 	}
 
-	public synchronized ProductBean doRetrieveByKey(int code) throws SQLException {
+	public synchronized ProductBean doRetrieveByKey(int code) throws SQLException {  //modificata
+		
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;		
 
