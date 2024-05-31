@@ -30,7 +30,7 @@
   </security-constraint>
   
   <security-role>
-  	<role-name>administrator</role-name>
+  	<role-name>administrator </role-name>
   </security-role>
   <security-role>
   	<role-name>registeredUser</role-name>
