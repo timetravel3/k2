@@ -53,6 +53,7 @@ $(function() {
         welcomeSection.removeClass('content-hidden');
     }, 800);
 });
+//
 
 </script>
 
