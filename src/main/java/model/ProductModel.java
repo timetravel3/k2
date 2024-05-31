@@ -44,8 +44,7 @@ public class ProductModel {
 		}
 	}
 
-	public synchronized ProductBean doRetrieveByKey(int code) throws SQLException {  //modificata
-		
+	public synchronized ProductBean doRetrieveByKey(int code) throws SQLException {
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;		
 
@@ -115,68 +114,67 @@ public class ProductModel {
 		return (result != 0);
 	}
 	public synchronized Collection<ProductBean> doRetrieveAll(String where) throws SQLException {
-	    Connection connection = null;
-	    Connection connection2 = null;
-	    PreparedStatement preparedStatement = null;
-	    PreparedStatement preparedStatement2 = null;
+		Connection connection = null;
+		Connection connection2 = null;
+		PreparedStatement preparedStatement = null;
+		PreparedStatement preparedStatement2 = null;
 
-	    Collection<ProductBean> products = new LinkedList<ProductBean>();
+		Collection<ProductBean> products = new LinkedList<ProductBean>();
 
-	    // Modifica della query per usare un parametro
-	    String selectSQL = "SELECT * FROM " + ProductModel.TABLE_NAME + " WHERE deleted = 'false' AND nomeTipologia = ?";
-	    String sql2 = "SELECT AVG(votazione) FROM Recensione WHERE codiceProdotto = ?";
-	    
-	    try {
-	        connection = DriverManagerConnectionPool.getConnection();
-	        preparedStatement = connection.prepareStatement(selectSQL);
-	        
-	        // Imposta il parametro per la query
-	        preparedStatement.setString(1, where);
+		String selectSQL = "SELECT * FROM " + ProductModel.TABLE_NAME + " WHERE deleted = 'false' AND nomeTipologia = ?";
+		String sql2 = "SELECT AVG(votazione) FROM Recensione WHERE codiceProdotto = ?";
+		
+		
+			
+			
+		try {
+			connection = DriverManagerConnectionPool.getConnection();
+			preparedStatement = connection.prepareStatement(selectSQL);
+			preparedStatement.setString(1, where);
+			
+			ResultSet rs = preparedStatement.executeQuery();
 
-	        ResultSet rs = preparedStatement.executeQuery();
+			while (rs.next()) {
+				ProductBean bean = new ProductBean();
+				
+				int codiceProdotto = rs.getInt("codice");
+				bean.setCodice(codiceProdotto);
+				bean.setNome(rs.getString("nome"));
+				bean.setDescrizione(rs.getString("descrizione"));
+				bean.setPrezzo(rs.getDouble("prezzo"));
+				bean.setSpedizione(rs.getDouble("speseSpedizione"));
+				bean.setEmail(rs.getString("emailVenditore"));
+				bean.setTag(rs.getString("tag"));
+				bean.setTipologia(rs.getString("nomeTipologia"));
+				bean.setData(rs.getDate("dataAnnuncio"));
+				bean.setImmagine(rs.getString("model"));
+				
+				connection2 = DriverManagerConnectionPool.getConnection();
+				preparedStatement2 = connection2.prepareStatement(sql2);
+				preparedStatement2.setInt(1, codiceProdotto);
+				ResultSet rs2 = preparedStatement2.executeQuery();
+				if (rs2.next()) {
+					bean.setVotazione(rs2.getDouble(1));
+				}
+				
+				products.add(bean);
+			}
 
-	        while (rs.next()) {
-	            ProductBean bean = new ProductBean();
-	            
-	            int codiceProdotto = rs.getInt("codice");
-	            bean.setCodice(codiceProdotto);
-	            bean.setNome(rs.getString("nome"));
-	            bean.setDescrizione(rs.getString("descrizione"));
-	            bean.setPrezzo(rs.getDouble("prezzo"));
-	            bean.setSpedizione(rs.getDouble("speseSpedizione"));
-	            bean.setEmail(rs.getString("emailVenditore"));
-	            bean.setTag(rs.getString("tag"));
-	            bean.setTipologia(rs.getString("nomeTipologia"));
-	            bean.setData(rs.getDate("dataAnnuncio"));
-	            bean.setImmagine(rs.getString("model"));
-	            
-	            connection2 = DriverManagerConnectionPool.getConnection();
-	            preparedStatement2 = connection2.prepareStatement(sql2);
-	            preparedStatement2.setInt(1, codiceProdotto);
-	            ResultSet rs2 = preparedStatement2.executeQuery();
-	            if (rs2.next()) {
-	                bean.setVotazione(rs2.getDouble(1));
-	            }
-	            
-	            products.add(bean);
-	        }
-
-	    } finally {
-	        try {
-	            if (preparedStatement != null)
-	                preparedStatement.close();
-	        } finally {
-	            if (connection2 != null) {
-	                DriverManagerConnectionPool.releaseConnection(connection2);
-	            }
-	            if (connection != null) {
-	                DriverManagerConnectionPool.releaseConnection(connection);
-	            }
-	        }
-	    }
-	    return products;
+		} finally {
+			try {
+				if (preparedStatement != null)
+					preparedStatement.close();
+			} finally {
+				if (connection2 != null) {
+					DriverManagerConnectionPool.releaseConnection(connection2);
+				}
+				if (connection != null) {
+					DriverManagerConnectionPool.releaseConnection(connection);
+				}
+			}
+		}
+		return products;
 	}
-
 	
 	public synchronized Collection<ProductBean> deleteProduct(int codiceProdotto, Collection<ProductBean> lista) {
 		String sql = "UPDATE Prodotto SET deleted = ? WHERE codice = ?";
